@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Amazing Digital Circus: The Last Act Countdown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Courier+Prime:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root { --accent-red: #ff0000; --gold: #FFD700; }
+
+        body {
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(45deg, #000 25%, transparent 25%), 
+                linear-gradient(-45deg, #000 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #000 75%), 
+                linear-gradient(-45deg, transparent 75%, #000 75%);
+            background-size: 80px 80px;
+            background-position: 0 0, 0 40px, 40px -40px, -40px 0px;
+            margin: 0; padding: 0;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; border: 20px solid #000; box-sizing: border-box;
+            overflow: hidden; font-family: 'Courier Prime', monospace;
+        }
+
+        .container {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 98%; max-width: 1600px; position: relative; height: 100%;
+        }
+
+        .side-panel { width: 220px; flex-shrink: 0; animation: drift 5s infinite ease-in-out; z-index: 5; }
+        .side-panel img { width: 100%; border: 8px solid #000; background: white; box-shadow: 10px 10px 0px #000; }
+
+        .center-content { display: flex; flex-direction: column; align-items: center; flex: 1; z-index: 5; }
+
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; }
+        .tab-btn {
+            background: #fff; border: 4px solid #000; padding: 10px 15px;
+            font-family: 'Bungee', cursive; cursor: pointer; box-shadow: 5px 5px 0px #000;
+            transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--accent-red); color: white; transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+
+        .logo { width: 320px; margin-bottom: 15px; }
+
+        .content-view-wrapper { position: relative; width: 100%; height: 500px; display: flex; justify-content: center; }
+
+        .section-view {
+            position: absolute; display: none; flex-direction: column; align-items: center; width: 100%;
+        }
+        .section-view.active { display: flex; }
+
+        h1 { font-family: 'Bungee'; background: #fff; border: 4px solid #000; padding: 5px 15px; box-shadow: 5px 5px 0px #000; font-size: 1.2rem; }
+
+        .countdown-box { background: #fff; border: 8px solid #000; padding: 20px; display: flex; gap: 15px; box-shadow: 10px 10px 0px #000; }
+        .time-unit { background: #000; color: #fff; padding: 10px; min-width: 65px; text-align: center; }
+        .number { font-family: 'Bungee'; font-size: 2rem; display: block; }
+        .label { font-size: 0.6rem; color: #888; text-transform: uppercase; }
+
+        /* --- SCROLLING CAST --- */
+        .scroll-container {
+            width: 95%; max-width: 1100px;
+            display: flex; gap: 20px;
+            overflow-x: auto; padding: 20px 10px 40px;
+            scroll-behavior: smooth;
+        }
+        .scroll-container::-webkit-scrollbar { height: 12px; }
+        .scroll-container::-webkit-scrollbar-track { background: #fff; border: 3px solid #000; }
+        .scroll-container::-webkit-scrollbar-thumb { background: var(--accent-red); border: 2px solid #000; }
+
+        .participant-card {
+            flex: 0 0 250px; background: #fff; border: 6px solid #000;
+            box-shadow: 8px 8px 0px #000; position: relative; transition: 0.3s;
+        }
+        .participant-card.is-favorite { border-color: var(--gold); box-shadow: 0 0 20px var(--gold), 8px 8px 0px #000; transform: translateY(-5px); }
+
+        .fav-star-btn {
+            position: absolute; top: 10px; right: 10px; width: 35px; height: 35px;
+            background: #fff; border: 3px solid #000; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem; z-index: 10;
+        }
+        .is-favorite .fav-star-btn { background: var(--gold); }
+
+        .card-img { width: 100%; height: 260px; object-fit: contain; background: #eee; border-bottom: 6px solid #000; cursor: pointer; }
+        .card-info { padding: 12px; cursor: pointer; }
+        .char-name { font-family: 'Bungee'; color: var(--accent-red); margin: 0; }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 20000;
+            display: none; justify-content: center; align-items: center;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: #fff; border: 10px solid #000; width: 90%; max-width: 750px; padding: 30px; position: relative; box-shadow: 15px 15px 0px #000; }
+        #modal-close { position: absolute; top: 10px; right: 10px; background: red; color: white; border: 3px solid #000; font-family: 'Bungee'; cursor: pointer; }
+        .modal-content { display: flex; gap: 20px; align-items: flex-start; }
+        #modal-image { width: 200px; border: 5px solid #000; background: #eee; }
+
+        @keyframes drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        #mute-btn { position: fixed; top: 20px; right: 20px; background: #fff; border: 4px solid #000; padding: 10px; font-family: 'Bungee'; cursor: pointer; z-index: 10000; }
+    </style>
+</head>
+<body onclick="startAudio()">
+
+    <audio id="bg-music" loop><source src="bg.mp3" type="audio/mpeg"></audio>
+    <button id="mute-btn" onclick="toggleAudio(event)">MUTE MUSIC</button>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <button id="modal-close" onclick="closeModal()">X</button>
+            <div class="modal-content">
+                <img src="" id="modal-image">
+                <div>
+                    <h2 id="modal-char-name" style="font-family:'Bungee'; margin:0;"></h2>
+                    <p id="modal-actor-name" style="font-weight:bold; color: #666;"></p>
+                    <hr>
+                    <p id="modal-char-desc" style="font-size: 0.9rem; line-height: 1.4;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="side-panel"><img src="https://static.wixstatic.com/media/b48361_268a4c3b4acc4370b60452b1c74db434~mv2.png"></div>
+
+        <div class="center-content">
+            <div class="tabs">
+                <button id="tab-streaming" class="tab-btn active" onclick="switchTab('streaming')">PREMIERE</button>
+                <button id="tab-theater" class="tab-btn" onclick="switchTab('theater')">THEATER</button>
+                <button id="tab-cast" class="tab-btn" onclick="switchTab('cast')">CAST</button>
+            </div>
+
+            <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/4/4d/The_Amazing_Digital_Circus_The_Last_Act_logo.png">
+
+            <div class="content-view-wrapper">
+                <div id="streaming" class="section-view active">
+                    <h1>GLOBAL PREMIERE IN:</h1>
+                    <div class="countdown-box">
+                        <div class="time-unit"><span class="number" id="d1">00</span><span class="label">Days</span></div>
+                        <div class="time-unit"><span class="number" id="h1">00</span><span class="label">Hours</span></div>
+                        <div class="time-unit"><span class="number" id="m1">00</span><span class="label">Min</span></div>
+                        <div class="time-unit"><span class="number" id="s1">00</span><span class="label">Sec</span></div>
+                    </div>
+                </div>
+
+                <div id="theater" class="section-view">
+                    <h1>THEATERS OPEN IN:</h1>
+                    <div class="countdown-box">
+                        <div class="time-unit"><span class="number" id="d2">00</span><span class="label">Days</span></div>
+                        <div class="time-unit"><span class="number" id="h2">00</span><span class="label">Hours</span></div>
+                        <div class="time-unit"><span class="number" id="m2">00</span><span class="label">Min</span></div>
+                        <div class="time-unit"><span class="number" id="s2">00</span><span class="label">Sec</span></div>
+                    </div>
+                </div>
+
+                <div id="cast" class="section-view">
+                    <h1>THE CAST</h1>
+                    <div class="scroll-container" id="castScroll"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="side-panel" style="animation-delay:-2s;"><img src="https://static.wixstatic.com/media/b48361_78e2ed181f4542d3823fc91f498d9e3b~mv2.png"></div>
+    </div>
+
+    <script>
+        const castData = [
+            { char: "POMNI", actor: "Lizzie Freeman", img: "https://static.wikia.nocookie.net/digital-circus/images/6/66/Pomni.png", desc: "The newest resident suffering from persistent existential dread." },
+            { char: "CAINE", actor: "Alex Rochon", img: "https://static.wikia.nocookie.net/tadc/images/7/73/Caine_render.webp", desc: "The manic Ringmaster AI with dentures for a head." },
+            { char: "JAX", actor: "Michael Kovach", img: "https://static.wikitide.net/greatcharacterswiki/f/fa/Jax.png", desc: "A cynical purple rabbit who loves making others miserable." },
+            { char: "RAGATHA", actor: "Amanda Hufford", img: "https://static.wikia.nocookie.net/tadc/images/8/8e/Ragatha_%28Render%29.png", desc: "The group's optimistic ragdoll and emotional anchor." },
+            { char: "GANGLE", actor: "Marissa Lenti", img: "https://static.wikia.nocookie.net/supermarioglitchy4/images/6/69/GangleHappy.png", desc: "A ribbon-like creature whose mood depends on her masks." },
+            { char: "ZOOBLE", actor: "Ashley Nichols", img: "https://static.wikia.nocookie.net/tadc/images/0/0d/ZooblePilotRender.png", desc: "An irritable mix-and-match toy who hates games." },
+            { char: "KINGER", actor: "Sean Chiplock", img: "https://preview.redd.it/what-makes-kinger-a-good-character-v0-rsolmlkuyvve1.png?auto=webp&s=1ba2bf25b3540b1f9886683c4cf735a6353c8a6b", desc: "The longest surviving resident, living in a pillow fort." },
+            { char: "BUBBLE", actor: "Gooseworx", img: "https://static.wikia.nocookie.net/neutral-characters/images/8/89/Bubble-Starring-at-your-damned-soul.png/revision/latest?cb=20251223050154", desc: "Caine's loyal assistant who eats anything and everything." }
+        ];
+
+        let favIdx = -1;
+        const scroller = document.getElementById('castScroll');
+
+        function render() {
+            scroller.innerHTML = '';
+            castData.forEach((d, i) => {
+                const card = document.createElement('div');
+                card.className = `participant-card ${i === favIdx ? 'is-favorite' : ''}`;
+                card.innerHTML = `
+                    <div class="fav-star-btn" onclick="toggleFav(event, ${i})">★</div>
+                    <img src="${d.img}" class="card-img" onclick="openModal(${i})">
+                    <div class="card-info" onclick="openModal(${i})">
+                        <p class="char-name">${d.char}</p>
+                        <p style="font-size:0.8rem; margin:0;">${d.actor}</p>
+                    </div>
+                `;
+                scroller.appendChild(card);
+            });
+        }
+
+        // Mouse Wheel Horizontal Scroll Integration
+        scroller.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                scroller.scrollLeft += e.deltaY;
+            }
+        });
+
+        function toggleFav(e, i) { 
+            e.stopPropagation(); 
+            favIdx = (favIdx === i) ? -1 : i; 
+            render(); 
+        }
+        
+        function openModal(i) {
+            const d = castData[i];
+            document.getElementById('modal-image').src = d.img;
+            document.getElementById('modal-char-name').innerText = d.char;
+            document.getElementById('modal-actor-name').innerText = "VOICED BY: " + d.actor;
+            document.getElementById('modal-char-desc').innerText = d.desc;
+            document.getElementById('modalOverlay').classList.add('open');
+        }
+
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+
+        function switchTab(id) {
+            document.querySelectorAll('.section-view, .tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.getElementById('tab-'+id).classList.add('active');
+        }
+
+        function updateTimers() {
+            const now = new Date().getTime();
+            // Targets: Premiere (June 19, 2026), Theater (June 4, 2026)
+            const targets = [new Date("June 19, 2026 00:00:00").getTime(), new Date("June 4, 2026 00:00:00").getTime()];
+            
+            targets.forEach((t, i) => {
+                const diff = t - now;
+                const d = Math.max(0, Math.floor(diff/86400000)), 
+                      h = Math.max(0, Math.floor((diff%86400000)/3600000)), 
+                      m = Math.max(0, Math.floor((diff%3600000)/60000)), 
+                      s = Math.max(0, Math.floor((diff%60000)/1000));
+                const p = i + 1;
+                document.getElementById(`d${p}`).innerText = d < 10 ? "0"+d : d;
+                document.getElementById(`h${p}`).innerText = h < 10 ? "0"+h : h;
+                document.getElementById(`m${p}`).innerText = m < 10 ? "0"+m : m;
+                document.getElementById(`s${p}`).innerText = s < 10 ? "0"+s : s;
+            });
+        }
+
+        const audio = document.getElementById('bg-music');
+        function startAudio() { audio.play().catch(() => {}); }
+        function toggleAudio(e) { e.stopPropagation(); audio.paused ? audio.play() : audio.pause(); }
+
+        setInterval(updateTimers, 1000);
+        updateTimers();
+        render();
+    </script>
+</body>
+</html>
